@@ -1,0 +1,94 @@
+"use client";
+
+import type { TimeEntryWithUser } from "@/types";
+import { Badge } from "@/components/ui/badge";
+import { formatIsoToLocalDateTime, isoToLocalTimeInput } from "@/utils/date";
+import { Loader2 } from "lucide-react";
+
+const statusBadge: Record<TimeEntryWithUser["status"], "success" | "danger" | "warning"> = {
+  approved: "success",
+  rejected: "danger",
+  pending: "warning",
+};
+
+interface AdminEntriesTableProps {
+  entries: TimeEntryWithUser[];
+  selectedIds: Set<string>;
+  onToggle: (entryId: string) => void;
+  loading?: boolean;
+}
+
+export function AdminEntriesTable({ entries, selectedIds, onToggle, loading }: AdminEntriesTableProps) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-[rgb(var(--color-border))] bg-white shadow-sm dark:bg-[rgb(var(--color-surface))]">
+      <table data-testid="admin-entries-table" className="min-w-full divide-y divide-[rgb(var(--color-border))]">
+        <thead className="bg-slate-50 text-xs uppercase tracking-wide text-[rgb(var(--color-subtle))] dark:bg-slate-900/40">
+          <tr>
+            <th className="px-4 py-3 text-left">
+              <span className="sr-only">Select</span>
+            </th>
+            <th className="px-4 py-3 text-left">Employee</th>
+            <th className="px-4 py-3 text-left">Date</th>
+            <th className="px-4 py-3 text-left">Start</th>
+            <th className="px-4 py-3 text-left">End</th>
+            <th className="px-4 py-3 text-left">Minutes</th>
+            <th className="px-4 py-3 text-left">Status</th>
+            <th className="px-4 py-3 text-left">Note</th>
+            <th className="px-4 py-3 text-left">Review</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-[rgb(var(--color-border))] text-sm">
+          {entries.map((entry) => (
+            <tr
+              key={entry.id}
+              data-testid="admin-entry-row"
+              className="bg-white transition hover:bg-slate-50 dark:bg-[rgb(var(--color-surface))] dark:hover:bg-slate-800/80"
+            >
+              <td className="px-4 py-4">
+                <input
+                  type="checkbox"
+                  data-testid={`admin-entry-checkbox-${entry.id}`}
+                  aria-label={`Select entry ${entry.id}`}
+                  checked={selectedIds.has(entry.id)}
+                  onChange={() => onToggle(entry.id)}
+                  className="h-4 w-4 rounded border-[rgb(var(--color-border))] text-blue-600 focus:ring-blue-500"
+                />
+              </td>
+              <td className="px-4 py-4">
+                <div className="flex flex-col">
+                  <span className="font-medium">{entry.user?.displayName ?? entry.userId}</span>
+                  <span className="text-xs text-[rgb(var(--color-subtle))]">{entry.user?.email}</span>
+                </div>
+              </td>
+              <td className="px-4 py-4">{entry.date}</td>
+              <td className="px-4 py-4">{isoToLocalTimeInput(entry.startUtc)}</td>
+              <td className="px-4 py-4">{isoToLocalTimeInput(entry.endUtc)}</td>
+              <td className="px-4 py-4">{entry.totalMinutes}</td>
+              <td className="px-4 py-4">
+                <Badge variant={statusBadge[entry.status]}>{entry.status}</Badge>
+              </td>
+              <td className="px-4 py-4 max-w-xs truncate" title={entry.note ?? ""}>
+                {entry.note ?? <span className="text-[rgb(var(--color-subtle))]">-</span>}
+              </td>
+              <td className="px-4 py-4 max-w-xs truncate" title={entry.reviewNote ?? ""}>
+                {entry.reviewNote ?? <span className="text-[rgb(var(--color-subtle))]">-</span>}
+                {entry.approvedAt ? (
+                  <span className="block text-xs text-[rgb(var(--color-subtle))]">
+                    {formatIsoToLocalDateTime(entry.approvedAt)}
+                  </span>
+                ) : null}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {!entries.length && (
+        <div className="flex items-center justify-center gap-3 px-6 py-16 text-sm text-[rgb(var(--color-subtle))]">
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+          {loading ? "Loading entries..." : "Nothing to review yet. Adjust your filters above."}
+        </div>
+      )}
+    </div>
+  );
+}
