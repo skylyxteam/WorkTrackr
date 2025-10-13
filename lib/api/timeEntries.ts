@@ -5,6 +5,7 @@ import type {
   TimeEntryPayloadInput,
   AdminDecisionInput,
   ExportQueryInput,
+  ClockOutPayloadInput,
 } from "@/lib/validation";
 
 async function handleJson<T>(response: Response): Promise<T> {
@@ -13,6 +14,26 @@ async function handleJson<T>(response: Response): Promise<T> {
     throw new Error(text || "Request failed");
   }
   return (await response.json()) as T;
+}
+
+export async function clockIn(): Promise<TimeEntry> {
+  const response = await fetch("/api/timeEntries/clock-in", {
+    method: "POST",
+  });
+
+  const data = await handleJson<{ entry: TimeEntry }>(response);
+  return data.entry;
+}
+
+export async function clockOut(payload: ClockOutPayloadInput = {}): Promise<TimeEntry> {
+  const response = await fetch("/api/timeEntries/clock-out", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await handleJson<{ entry: TimeEntry }>(response);
+  return data.entry;
 }
 
 export async function createTimeEntry(payload: TimeEntryPayloadInput): Promise<TimeEntry> {
@@ -87,7 +108,6 @@ export async function downloadCsv(params: Partial<ExportQueryInput> = {}): Promi
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = `worktrackr-export-${Date.now()}.csv`;
-  anchor.click();
+  anchor.download = `worktrackr-export-${new Date().toISOString().slice(0, 10)}.csv`;  anchor.click();
   URL.revokeObjectURL(url);
 }

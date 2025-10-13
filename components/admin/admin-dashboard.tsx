@@ -242,7 +242,7 @@ export function AdminDashboard({ initialEntries, employees }: AdminDashboardProp
           <div className="flex flex-col gap-1">
             <h3 className="text-lg font-semibold">Matching entries</h3>
             <span className="text-sm text-[rgb(var(--color-subtle))]">
-              {entries.length} total rows � {selected.size} selected
+              {entries.length} total rows • {selected.size} selected
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-3">

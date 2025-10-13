@@ -24,8 +24,8 @@ export interface TimeEntry {
   userId: string;
   date: string; // yyyy-MM-dd
   startUtc: string; // ISO 8601
-  endUtc: string; // ISO 8601
-  totalMinutes: number;
+  endUtc: string | null; // ISO 8601 or null when in progress
+  totalMinutes: number | null;
   status: TimeEntryStatus;
   note?: string;
   reviewNote?: string;

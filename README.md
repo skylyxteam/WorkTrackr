@@ -4,7 +4,7 @@ WorkTrackr is a modern time-tracking app for distributed teams built with Next.j
 
 ## Features
 
-- **Authentication**: Firebase Email/Password + Google sign-in, exchanged for secure session cookies via Next.js API routes.
+- **Authentication**: Firebase Email/Password + Google sign-in with dedicated sign-up page, password visibility toggles, and confirmation fields. Authentication tokens are exchanged for secure session cookies via Next.js API routes.
 - **Employee workspace**
   - Mobile-first form that stores entry/exit times in UTC with optional notes
   - Edit or delete submissions while they remain `pending`
@@ -27,7 +27,8 @@ WorkTrackr is a modern time-tracking app for distributed teams built with Next.j
 
 ```
 app/
-  (auth)/sign-in         # Public sign-in flow
+  (auth)/sign-in         # Public sign-in flow with password visibility toggle
+  (auth)/sign-up         # Public sign-up flow with password confirmation
   (protected)/layout     # Authenticated shell + navigation
   (protected)/dashboard  # Employee dashboard
   (protected)/admin      # Admin dashboard
@@ -37,7 +38,7 @@ app/
     timeEntries          # Employee CRUD endpoints
     admin/{approve,export}
 components/
-  auth/                  # AuthGate, RoleGate, sign-in form
+  auth/                  # AuthGate, RoleGate, sign-in/sign-up forms with enhanced UX
   admin/                 # Admin dashboard widgets (table, CSV button)
   dashboard/             # Employee widgets
   layout/                # Top navigation, sign-out
@@ -126,22 +127,31 @@ service cloud.firestore {
 
 The Jest rules test (`npm run test:rules`) loads this file into the Firestore emulator to validate typical allow/deny scenarios.
 
+## Authentication Features
+
+- **Sign-In Page** (`/sign-in`): Email/password and Google authentication with password visibility toggle
+- **Sign-Up Page** (`/sign-up`): New user registration with display name, password confirmation, and enhanced validation
+- **Auto-Profile Creation**: User documents are automatically created in Firestore on first authentication
+- **Session Management**: Secure HTTP-only cookies with Firebase ID token exchange
+- **Role-Based Access**: Automatic employee role assignment with admin promotion via Firestore
+
 ## Local Development
 
 1. **Install dependencies**
    ```bash
    npm install
    ```
-2. **Start Firebase emulators** (Firestore + Auth) in one terminal:
+2. **Configure environment variables**: Copy `.env.example` to `.env.local` and fill in your Firebase credentials
+3. **Start Firebase emulators** (Firestore + Auth) in one terminal:
    ```bash
    npm run emulators
    ```
    The default ports are 8080 (Firestore) and 9099 (Auth). `.env.example` contains matching overrides.
-3. **Run Next.js locally** in a separate terminal:
+4. **Run Next.js locally** in a separate terminal:
    ```bash
    npm run dev
    ```
-4. **Seed test users** via the emulator UI (http://localhost:4000) or Firebase CLI. Admins require `role = "admin"` in `users/{uid}`.
+5. **Test authentication**: Visit `/sign-up` to create test accounts or seed users via the emulator UI (http://localhost:4000). Admins require `role = "admin"` in `users/{uid}`.
 
 ## Testing
 

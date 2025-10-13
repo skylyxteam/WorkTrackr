@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { TimeEntry } from "@/types";
 import { TimeEntryForm } from "@/components/dashboard/time-entry-form";
 import { EntriesList } from "@/components/dashboard/entries-list";
-import { createTimeEntry, deleteTimeEntry, updateTimeEntry } from "@/lib/api/timeEntries";
+import { clockIn, clockOut, deleteTimeEntry, updateTimeEntry } from "@/lib/api/timeEntries";
 import type { TimeEntryPayloadInput } from "@/lib/validation";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Toast } from "@/components/ui/toast";
@@ -25,21 +25,46 @@ export function EmployeeDashboard({ initialEntries }: EmployeeDashboardProps) {
     variant: "info",
   });
 
+  const activeEntry = useMemo(() => {
+    let latest: TimeEntry | null = null;
+    for (const entry of entries) {
+      if (entry.endUtc) continue;
+      if (!latest || entry.startUtc > latest.startUtc) {
+        latest = entry;
+      }
+    }
+    return latest;
+  }, [entries]);
+
   const resetToast = () => setToast((prev) => ({ ...prev, open: false }));
 
-  const handleSubmit = async (values: TimeEntryPayloadInput) => {
-    if (editingEntry) {
-      const updated = await updateTimeEntry(editingEntry.id, values);
-      setEntries((prev) => prev.map((entry) => (entry.id === updated.id ? updated : entry)));
-      setEditingEntry(null);
-      setToast({ open: true, message: "Entry updated", variant: "success" });
-      return updated;
+  const handleClockIn = async () => {
+    const created = await clockIn();
+    setEntries((prev) => {
+      const withoutDuplicate = prev.filter((entry) => entry.id !== created.id);
+      return [created, ...withoutDuplicate];
+    });
+    setToast({ open: true, message: "Clocked in", variant: "success" });
+    return created;
+  };
+
+  const handleClockOut = async (note?: string) => {
+    const completed = await clockOut({ note });
+    setEntries((prev) => prev.map((entry) => (entry.id === completed.id ? completed : entry)));
+    setToast({ open: true, message: "Clocked out", variant: "success" });
+    return completed;
+  };
+
+  const handleEditSubmit = async (values: TimeEntryPayloadInput) => {
+    if (!editingEntry) {
+      throw new Error("No entry selected for editing");
     }
 
-    const created = await createTimeEntry(values);
-    setEntries((prev) => [created, ...prev]);
-    setToast({ open: true, message: "Entry submitted for approval", variant: "success" });
-    return created;
+    const updated = await updateTimeEntry(editingEntry.id, values);
+    setEntries((prev) => prev.map((entry) => (entry.id === updated.id ? updated : entry)));
+    setEditingEntry(null);
+    setToast({ open: true, message: "Entry updated", variant: "success" });
+    return updated;
   };
 
   const handleDelete = async (entry: TimeEntry) => {
@@ -65,21 +90,26 @@ export function EmployeeDashboard({ initialEntries }: EmployeeDashboardProps) {
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-2">
         <h2 className="text-xl font-semibold text-[rgb(var(--color-foreground))]">
-          {editingEntry ? "Edit entry" : "Log a new workday"}
+          {editingEntry ? "Edit entry" : "Track your time"}
         </h2>
         <p className="text-sm text-[rgb(var(--color-subtle))]">
-          Store your hours in UTC automatically; edit or delete submissions while they are pending approval.
+          Clock in to start your day, clock out when you finish; edit or delete submissions while they are pending approval.
         </p>
       </div>
 
-      <TimeEntryForm
-        initialEntry={editingEntry}
-        submitRequest={handleSubmit}
-        onSubmitSuccess={() => {
-          /* state updates handled in handleSubmit */
-        }}
-        onCancelEdit={() => setEditingEntry(null)}
-      />
+      {editingEntry ? (
+        <TimeEntryForm
+          initialEntry={editingEntry}
+          submitRequest={handleEditSubmit}
+          onCancelEdit={() => setEditingEntry(null)}
+        />
+      ) : (
+        <TimeEntryForm
+          activeEntry={activeEntry}
+          onClockIn={handleClockIn}
+          onClockOut={handleClockOut}
+        />
+      )}
 
       <section className="flex flex-col gap-4">
         <header className="flex items-center justify-between">
@@ -91,12 +121,12 @@ export function EmployeeDashboard({ initialEntries }: EmployeeDashboardProps) {
           </div>
         </header>
         <AuthGate fallback={<Spinner label="Loading entries" />}>
-        <EntriesList
-          entries={entries}
-          onEdit={(entry) => setEditingEntry(entry)}
-          onDelete={handleDelete}
-        />
-      </AuthGate>
+          <EntriesList
+            entries={entries}
+            onEdit={(entry) => setEditingEntry(entry)}
+            onDelete={handleDelete}
+          />
+        </AuthGate>
       </section>
 
       <ConfirmDialog
@@ -112,4 +142,3 @@ export function EmployeeDashboard({ initialEntries }: EmployeeDashboardProps) {
     </div>
   );
 }
-

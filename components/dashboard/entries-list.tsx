@@ -48,67 +48,70 @@ export function EntriesList({ entries, onEdit, onDelete }: EntriesListProps) {
           </tr>
         </thead>
         <tbody className="divide-y divide-[rgb(var(--color-border))] text-sm">
-          {entries.map((entry) => (
-            <tr
-              key={entry.id}
-              data-testid="employee-entry-row"
-              data-entry-id={entry.id}
-              className="bg-white transition hover:bg-slate-50 dark:bg-[rgb(var(--color-surface))] dark:hover:bg-slate-800/60"
-            >
-              <td className="px-4 py-4 font-medium">{entry.date}</td>
-              <td className="px-4 py-4">{isoToLocalTimeInput(entry.startUtc)}</td>
-              <td className="px-4 py-4">{isoToLocalTimeInput(entry.endUtc)}</td>
-              <td className="px-4 py-4">{entry.totalMinutes}</td>
-              <td className="px-4 py-4">
-                <Badge variant={statusVariant[entry.status]}>{entry.status}</Badge>
-              </td>
-              <td className="px-4 py-4 max-w-xs truncate" title={entry.note ?? ""}>
-                {entry.note ?? <span className="text-[rgb(var(--color-subtle))]">�</span>}
-              </td>
-              <td className="px-4 py-4 max-w-xs truncate" title={entry.reviewNote ?? ""}>
-                {entry.reviewNote ?? <span className="text-[rgb(var(--color-subtle))]">�</span>}
-                {entry.approvedAt ? (
-                  <span className="block text-xs text-[rgb(var(--color-subtle))]">
-                    {formatIsoToLocalDateTime(entry.approvedAt)}
-                  </span>
-                ) : null}
-              </td>
-              <td className="px-4 py-4">
-                <div className="flex justify-end gap-2">
-                  {entry.status === "pending" && (
-                    <Button
-                      variant="ghost"
-                      onClick={() => onEdit(entry)}
-                      data-testid={`edit-entry-${entry.id}`}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  )}
-                  {entry.status === "pending" && (
-                    <Button
-                      variant="ghost"
-                      onClick={() => onDelete(entry)}
-                      className="text-red-600 hover:text-red-500"
-                      data-testid={`delete-entry-${entry.id}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                  {entry.status !== "pending" && entry.approvedBy && (
-                    <Link
-                      href="/profile"
-                      className="text-xs text-[rgb(var(--color-subtle))] underline"
-                    >
-                      View reviewer
-                    </Link>
-                  )}
-                </div>
-              </td>
-            </tr>
-          ))}
+          {entries.map((entry) => {
+            const endTimeLabel = entry.endUtc ? isoToLocalTimeInput(entry.endUtc) : "--";
+            const minutesLabel = entry.totalMinutes ?? "--";
+            return (
+              <tr
+                key={entry.id}
+                data-testid="employee-entry-row"
+                data-entry-id={entry.id}
+                className="bg-white transition hover:bg-slate-50 dark:bg-[rgb(var(--color-surface))] dark:hover:bg-slate-800/60"
+              >
+                <td className="px-4 py-4 font-medium">{entry.date}</td>
+                <td className="px-4 py-4">{isoToLocalTimeInput(entry.startUtc)}</td>
+                <td className="px-4 py-4">{endTimeLabel}</td>
+                <td className="px-4 py-4">{minutesLabel}</td>
+                <td className="px-4 py-4">
+                  <Badge variant={statusVariant[entry.status]}>{entry.status}</Badge>
+                </td>
+                <td className="px-4 py-4 max-w-xs truncate" title={entry.note ?? ""}>
+                  {entry.note ?? <span className="text-[rgb(var(--color-subtle))]">--</span>}
+                </td>
+                <td className="px-4 py-4 max-w-xs truncate" title={entry.reviewNote ?? ""}>
+                  {entry.reviewNote ?? <span className="text-[rgb(var(--color-subtle))]">--</span>}
+                  {entry.approvedAt ? (
+                    <span className="block text-xs text-[rgb(var(--color-subtle))]">
+                      {formatIsoToLocalDateTime(entry.approvedAt)}
+                    </span>
+                  ) : null}
+                </td>
+                <td className="px-4 py-4">
+                  <div className="flex justify-end gap-2">
+                    {entry.status === "pending" && (
+                      <Button
+                        variant="ghost"
+                        onClick={() => onEdit(entry)}
+                        data-testid={`edit-entry-${entry.id}`}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {entry.status === "pending" && (
+                      <Button
+                        variant="ghost"
+                        onClick={() => onDelete(entry)}
+                        className="text-red-600 hover:text-red-500"
+                        data-testid={`delete-entry-${entry.id}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {entry.status !== "pending" && entry.approvedBy && (
+                      <Link
+                        href="/profile"
+                        className="text-xs text-[rgb(var(--color-subtle))] underline"
+                      >
+                        View reviewer
+                      </Link>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
   );
 }
-

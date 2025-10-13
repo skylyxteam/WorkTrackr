@@ -19,6 +19,14 @@ const baseEntry: TimeEntry = {
   approvedAt: undefined,
 };
 
+const openEntry: TimeEntry = {
+  ...baseEntry,
+  id: "open",
+  endUtc: null,
+  totalMinutes: null,
+  note: undefined,
+};
+
 afterEach(() => {
   jest.clearAllMocks();
   jest.restoreAllMocks();
@@ -43,11 +51,11 @@ describe("TimeEntryForm", () => {
     const dateInput = screen.getByTestId("time-entry-date") as HTMLInputElement;
     const startInput = screen.getByTestId("time-entry-start") as HTMLInputElement;
     const endInput = screen.getByTestId("time-entry-end") as HTMLInputElement;
-    const noteInput = screen.getByTestId("time-entry-note") as HTMLTextAreaElement;
+    const noteInput = screen.getByTestId("time-entry-edit-note") as HTMLTextAreaElement;
 
     expect(dateInput.value).toBe("2025-01-15");
     expect(startInput.value).toBe(isoToLocalTimeInput(baseEntry.startUtc));
-    expect(endInput.value).toBe(isoToLocalTimeInput(baseEntry.endUtc));
+    expect(endInput.value).toBe(isoToLocalTimeInput(baseEntry.endUtc!));
     expect(noteInput.value).toBe("Daily sync");
 
     await user.clear(startInput);
@@ -71,17 +79,52 @@ describe("TimeEntryForm", () => {
     expect(onSubmitSuccess).toHaveBeenCalled();
   });
 
-  it("surfaces validation errors from submitRequest", async () => {
+  it("shows clock in controls and calls handlers", async () => {
+    const user = userEvent.setup();
+    const onClockIn = jest.fn().mockResolvedValue(openEntry);
+    const onClockOut = jest.fn();
+
+    render(<TimeEntryForm activeEntry={null} onClockIn={onClockIn} onClockOut={onClockOut} />);
+
+    const clockInButton = screen.getByTestId("clock-in-button");
+    await user.click(clockInButton);
+
+    await waitFor(() => {
+      expect(onClockIn).toHaveBeenCalledTimes(1);
+    });
+
+    expect(onClockOut).not.toHaveBeenCalled();
+  });
+
+  it("allows clocking out with a note", async () => {
+    const user = userEvent.setup();
+    const completedEntry: TimeEntry = {
+      ...baseEntry,
+      note: "Completed tasks",
+    };
+    const onClockOut = jest.fn().mockResolvedValue(completedEntry);
+
+    render(<TimeEntryForm activeEntry={openEntry} onClockIn={jest.fn()} onClockOut={onClockOut} />);
+
+    const noteField = screen.getByTestId("time-entry-note") as HTMLTextAreaElement;
+    await user.type(noteField, "  Completed tasks ");
+    await user.click(screen.getByTestId("clock-out-button"));
+
+    await waitFor(() => {
+      expect(onClockOut).toHaveBeenCalledWith("Completed tasks");
+    });
+  });
+
+  it("surfaces errors from clock out handler", async () => {
     const user = userEvent.setup();
     jest.spyOn(console, "error").mockImplementation(() => {});
-    const error = new Error("Exit time must be after start");
-    const submitRequest = jest.fn().mockRejectedValue(error);
+    const onClockOut = jest.fn().mockRejectedValue(new Error("No active entry"));
 
-    render(<TimeEntryForm submitRequest={submitRequest} />);
+    render(<TimeEntryForm activeEntry={openEntry} onClockIn={jest.fn()} onClockOut={onClockOut} />);
 
-    await user.click(screen.getByTestId("time-entry-submit"));
+    await user.click(screen.getByTestId("clock-out-button"));
 
-    await screen.findByText("Exit time must be after start");
+    await screen.findByTestId("time-entry-error");
+    expect(onClockOut).toHaveBeenCalledTimes(1);
   });
 });
-

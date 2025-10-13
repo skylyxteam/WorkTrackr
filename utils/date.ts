@@ -38,11 +38,15 @@ export function combineDateAndTimeToUtc(date: string, time: string): string {
 export function getMinutesBetween(startUtc: string, endUtc: string): number {
   const start = parseISO(startUtc);
   const end = parseISO(endUtc);
-  const minutes = differenceInMinutes(end, start);
-  if (minutes <= 0) {
+  
+  // Check if end is actually after start (in milliseconds for precision)
+  if (end.getTime() <= start.getTime()) {
     throw new Error("endUtc must be after startUtc");
   }
-  return minutes;
+  
+  // Calculate minutes and round up to ensure minimum 1 minute for any time worked
+  const minutes = differenceInMinutes(end, start);
+  return Math.max(1, minutes); // Ensure at least 1 minute is recorded
 }
 
 export function isoDateInTimezone(iso: string, timeZone: string): string {

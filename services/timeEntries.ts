@@ -1,7 +1,7 @@
 import { Timestamp, type DocumentData, type DocumentSnapshot, type Query } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebaseAdmin";
 import type { TimeEntry, TimeEntryFilter, TimeEntryStatus, TimeEntryWithUser, UserProfile } from "@/types";
-import { getMinutesBetween, isDateInFuture, isDateMatching } from "@/utils/date";
+import { getMinutesBetween, isDateInFuture, isDateMatching, isoDateInTimezone } from "@/utils/date";
 import { getAppTimezone } from "@/lib/env";
 
 const entriesCollection = adminDb.collection("timeEntries");
@@ -25,13 +25,16 @@ function docToTimeEntry(doc: DocumentSnapshot<DocumentData>): TimeEntry {
     throw new Error("Time entry document is missing data");
   }
 
+  const endValue = data.endUtc;
+  const totalMinutesValue = data.totalMinutes;
+
   return {
     id: doc.id,
     userId: data.userId as string,
     date: data.date as string,
     startUtc: data.startUtc as string,
-    endUtc: data.endUtc as string,
-    totalMinutes: data.totalMinutes as number,
+    endUtc: typeof endValue === "string" ? endValue : null,
+    totalMinutes: typeof totalMinutesValue === "number" ? totalMinutesValue : null,
     status: data.status as TimeEntryStatus,
     note: data.note ?? undefined,
     reviewNote: data.reviewNote ?? undefined,
@@ -40,6 +43,7 @@ function docToTimeEntry(doc: DocumentSnapshot<DocumentData>): TimeEntry {
     approvedAt: timestampToIso(data.approvedAt),
   } satisfies TimeEntry;
 }
+
 
 async function attachUsers(entries: TimeEntry[]): Promise<TimeEntryWithUser[]> {
   const uniqueIds = Array.from(new Set(entries.map((entry) => entry.userId)));
@@ -88,15 +92,16 @@ export async function createTimeEntryRecord(args: {
   userId: string;
   date: string;
   startUtc: string;
-  endUtc: string;
+  endUtc?: string | null;
   note?: string;
 }) {
-  const totalMinutes = validateEntryPayload(args.date, args.startUtc, args.endUtc);
+  const endUtc = args.endUtc ?? null;
+  const totalMinutes = endUtc ? validateEntryPayload(args.date, args.startUtc, endUtc) : null;
   const payload = {
     userId: args.userId,
     date: args.date,
     startUtc: args.startUtc,
-    endUtc: args.endUtc,
+    endUtc,
     totalMinutes,
     status: "pending" as TimeEntryStatus,
     note: args.note ?? null,
@@ -107,6 +112,81 @@ export async function createTimeEntryRecord(args: {
   const docRef = await entriesCollection.add(payload);
   const snapshot = await docRef.get();
   return docToTimeEntry(snapshot);
+}
+
+
+export async function startTimeEntryRecord(args: { userId: string }) {
+  const openSnapshot = await entriesCollection
+    .where("userId", "==", args.userId)
+    .where("endUtc", "==", null)
+    .limit(1)
+    .get();
+
+  if (!openSnapshot.empty) {
+    throw new Error("You are already clocked in");
+  }
+
+  const now = Timestamp.now();
+  const startIso = now.toDate().toISOString();
+  const timezone = getAppTimezone();
+  const date = isoDateInTimezone(startIso, timezone);
+
+  const payload = {
+    userId: args.userId,
+    date,
+    startUtc: startIso,
+    endUtc: null,
+    totalMinutes: null,
+    status: "pending" as TimeEntryStatus,
+    note: null,
+    reviewNote: null,
+    submittedAt: now,
+  };
+
+  const docRef = await entriesCollection.add(payload);
+  const snapshot = await docRef.get();
+  return docToTimeEntry(snapshot);
+}
+
+export async function completeTimeEntryRecord(args: { userId: string; note?: string }) {
+  const snapshot = await entriesCollection
+    .where("userId", "==", args.userId)
+    .where("endUtc", "==", null)
+    .get();
+
+  if (snapshot.empty) {
+    throw new Error("No active entry to clock out from");
+  }
+
+  let targetDoc = snapshot.docs[0];
+  let latestStart = Number.NEGATIVE_INFINITY;
+
+  for (const doc of snapshot.docs) {
+    const data = doc.data();
+    const startValue = data?.startUtc;
+    const startTimestamp =
+      typeof startValue === "string" ? new Date(startValue).getTime() : Number.NEGATIVE_INFINITY;
+    if (startTimestamp > latestStart) {
+      latestStart = startTimestamp;
+      targetDoc = doc;
+    }
+  }
+
+  const current = docToTimeEntry(targetDoc);
+  const now = Timestamp.now();
+  const endIso = now.toDate().toISOString();
+  const totalMinutes = getMinutesBetween(current.startUtc, endIso);
+
+  const noteValue = args.note ?? current.note ?? null;
+
+  await targetDoc.ref.update({
+    endUtc: endIso,
+    totalMinutes,
+    note: noteValue,
+  });
+
+  const fresh = await targetDoc.ref.get();
+  return docToTimeEntry(fresh);
 }
 
 export async function updateTimeEntryRecord(args: {

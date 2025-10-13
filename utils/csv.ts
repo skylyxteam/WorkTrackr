@@ -13,7 +13,7 @@ function escapeCsv(value: string | number | null | undefined): string {
 export function timeEntriesToCsv(entries: TimeEntryWithUser[]): string {
   const header = [
     "Date",
-    "Employee",
+    "Employee", 
     "Email",
     "Start (local)",
     "End (local)",
@@ -30,8 +30,8 @@ export function timeEntriesToCsv(entries: TimeEntryWithUser[]): string {
     entry.user?.displayName ?? entry.userId,
     entry.user?.email ?? "",
     formatIsoToLocalDateTime(entry.startUtc),
-    formatIsoToLocalDateTime(entry.endUtc),
-    entry.totalMinutes,
+    entry.endUtc ? formatIsoToLocalDateTime(entry.endUtc) : "",
+    entry.totalMinutes ?? "",
     entry.status,
     entry.note ?? "",
     entry.reviewNote ?? "",
@@ -39,7 +39,10 @@ export function timeEntriesToCsv(entries: TimeEntryWithUser[]): string {
     entry.approvedAt ? formatIsoToLocalDateTime(entry.approvedAt) : "",
   ]);
 
-  return [header, ...rows]
+  const csvContent = [header, ...rows]
     .map((columns) => columns.map(escapeCsv).join(","))
-    .join("\n");
+    .join("\r\n"); // Use Windows line endings for better Excel compatibility
+    
+  // Add UTF-8 BOM for proper character encoding in Excel and other programs
+  return "\uFEFF" + csvContent;
 }
