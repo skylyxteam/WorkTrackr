@@ -238,41 +238,47 @@ export function AdminDashboard({ initialEntries, employees }: AdminDashboardProp
       </section>
 
       <section className="flex flex-col gap-4">
-        <header className="flex flex-wrap items-center justify-between gap-4">
+        <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-col gap-1">
             <h3 className="text-lg font-semibold">Matching entries</h3>
             <span className="text-sm text-[rgb(var(--color-subtle))]">
               {entries.length} total rows • {selected.size} selected
             </span>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <Input
               placeholder="Add a review note (optional)"
               value={reviewNote}
               onChange={(event) => setReviewNote(event.target.value)}
-              className="w-64"
+              className="w-full sm:w-64"
             />
-            <CSVExportButton params={filters} />
-            <Button type="button" variant="outline" onClick={handleSelectAll} disabled={!entries.length}>
-              {selected.size === entries.length ? "Clear selection" : "Select all"}
-            </Button>
-            <Button
-              type="button"
-              onClick={() => runBulkAction("approved")}
-              disabled={!selected.size}
-              loading={bulkLoading}
-            >
-              Approve
-            </Button>
-            <Button
-              type="button"
-              variant="danger"
-              onClick={() => runBulkAction("rejected")}
-              disabled={!selected.size}
-              loading={bulkLoading}
-            >
-              Reject
-            </Button>
+            <div className="flex flex-wrap items-center gap-3">
+              <CSVExportButton params={filters} />
+              <Button type="button" variant="outline" onClick={handleSelectAll} disabled={!entries.length} className="flex-1 sm:flex-none">
+                {selected.size === entries.length ? "Clear selection" : "Select all"}
+              </Button>
+            </div>
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                onClick={() => runBulkAction("approved")}
+                disabled={!selected.size}
+                loading={bulkLoading}
+                className="flex-1 sm:flex-none"
+              >
+                Approve
+              </Button>
+              <Button
+                type="button"
+                variant="danger"
+                onClick={() => runBulkAction("rejected")}
+                disabled={!selected.size}
+                loading={bulkLoading}
+                className="flex-1 sm:flex-none"
+              >
+                Reject
+              </Button>
+            </div>
           </div>
         </header>
 
