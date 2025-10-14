@@ -9,8 +9,9 @@ export const runtime = "nodejs";
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { entryId: string } },
+  context : { params: { entryId: string } },
 ) {
+  const { params } = context;
   const user = await getCurrentUserProfile();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -48,8 +49,9 @@ export async function PATCH(
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: { entryId: string } },
+  context: { params: { entryId: string } },
 ) {
+  const { params } = context;
   const user = await getCurrentUserProfile();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
