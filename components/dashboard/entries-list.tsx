@@ -99,14 +99,6 @@ export function EntriesList({ entries, onEdit, onDelete }: EntriesListProps) {
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       )}
-                      {entry.status !== "pending" && entry.approvedBy && (
-                        <Link
-                          href="/profile"
-                          className="text-xs text-[rgb(var(--color-subtle))] underline"
-                        >
-                          View reviewer
-                        </Link>
-                      )}
                     </div>
                   </td>
                 </tr>
