@@ -25,7 +25,7 @@ export async function clockIn(): Promise<TimeEntry> {
   return data.entry;
 }
 
-export async function clockOut(payload: ClockOutPayloadInput = {}): Promise<TimeEntry> {
+export async function clockOut(payload: ClockOutPayloadInput = { note: undefined }): Promise<TimeEntry> {
   const response = await fetch("/api/timeEntries/clock-out", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

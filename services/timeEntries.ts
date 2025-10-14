@@ -231,24 +231,29 @@ export async function updateTimeEntryRecord(args: {
 }
 
 export async function deleteTimeEntryRecord(entryId: string, userId: string, actingRole: UserProfile["role"]) {
-  const docRef = entriesCollection.doc(entryId);
-  const snapshot = await docRef.get();
+  try {
+    const docRef = entriesCollection.doc(entryId);
+    const snapshot = await docRef.get();
 
-  if (!snapshot.exists) {
-    throw new Error("Entry not found");
+    if (!snapshot.exists) {
+      throw new Error("Entry not found");
+    }
+
+    const current = docToTimeEntry(snapshot);
+
+    if (current.userId !== userId && actingRole !== "admin") {
+      throw new Error("You can only delete your own entries");
+    }
+
+    if (current.status !== "pending" && actingRole !== "admin") {
+      throw new Error("Only pending entries can be deleted");
+    }
+
+    await docRef.delete();
+  } catch (error) {
+    console.error("Error in deleteTimeEntryRecord:", error);
+    throw error;
   }
-
-  const current = docToTimeEntry(snapshot);
-
-  if (current.userId !== userId && actingRole !== "admin") {
-    throw new Error("You can only delete your own entries");
-  }
-
-  if (current.status !== "pending" && actingRole !== "admin") {
-    throw new Error("Only pending entries can be deleted");
-  }
-
-  await docRef.delete();
 }
 
 export async function listEntriesForUser(userId: string, filter: TimeEntryFilter = {}): Promise<TimeEntry[]> {

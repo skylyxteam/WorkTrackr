@@ -7,11 +7,13 @@ import { deleteTimeEntryRecord, updateTimeEntryRecord } from "@/services/timeEnt
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
+type RouteParams = Promise<{ entryId: string }>;
+
 export async function PATCH(
   request: Request,
-  context: { params: { entryId: string } },
+  { params }: { params: RouteParams },
 ) {
-  const { params } = context;
+  const { entryId } = await params;
   const user = await getCurrentUserProfile();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -28,7 +30,7 @@ export async function PATCH(
     const endUtc = combineDateAndTimeToUtc(parsed.data.date, parsed.data.endTime);
 
     const entry = await updateTimeEntryRecord({
-      entryId: params.entryId,
+      entryId,
       userId: user.id,
       date: parsed.data.date,
       startUtc,
@@ -49,16 +51,16 @@ export async function PATCH(
 
 export async function DELETE(
   _request: Request,
-  context : { params: { entryId: string } },
+  { params }: { params: RouteParams },
 ) {
-  const { params } = context;
+  const { entryId } = await params;
   const user = await getCurrentUserProfile();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    await deleteTimeEntryRecord(params.entryId, user.id, user.role);
+    await deleteTimeEntryRecord(entryId, user.id, user.role);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to delete time entry", error);

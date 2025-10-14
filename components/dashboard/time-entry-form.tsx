@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,7 +86,7 @@ function ClockControls({
     updateElapsed();
     const intervalId = window.setInterval(updateElapsed, 1000);
     return () => window.clearInterval(intervalId);
-  }, [activeEntry?.startUtc]);
+  }, [activeEntry]);
 
   const handleClockIn = async () => {
     if (loading) return;
@@ -152,7 +152,6 @@ function ClockControls({
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Button
           type="button"
-          size="lg"
           data-testid="clock-in-button"
           disabled={clockedIn || loading === "clock-out"}
           loading={loading === "clock-in"}
@@ -162,7 +161,6 @@ function ClockControls({
         </Button>
         <Button
           type="button"
-          size="lg"
           variant="outline"
           data-testid="clock-out-button"
           disabled={!clockedIn || loading === "clock-in"}
@@ -217,7 +215,7 @@ function EditEntryForm({
     formState: { errors, isSubmitting },
     reset,
   } = useForm<TimeEntryPayloadInput>({
-    resolver: zodResolver(timeEntryPayloadSchema),
+    resolver: zodResolver(timeEntryPayloadSchema) as Resolver<TimeEntryPayloadInput>,
     defaultValues,
   });
 
