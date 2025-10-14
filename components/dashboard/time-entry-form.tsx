@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,7 +49,7 @@ export function TimeEntryForm({ initialEntry, submitRequest, onSubmitSuccess, on
     formState: { errors, isSubmitting },
     reset,
   } = useForm<TimeEntryPayloadInput>({
-    resolver: zodResolver(timeEntryPayloadSchema),
+    resolver: zodResolver(timeEntryPayloadSchema) as Resolver<TimeEntryPayloadInput>,
     defaultValues,
   });
 
