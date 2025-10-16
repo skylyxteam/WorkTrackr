@@ -3,12 +3,10 @@
 import {
   GoogleAuthProvider,
   browserLocalPersistence,
-  getRedirectResult,
   setPersistence,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInWithPopup,
-  signInWithRedirect,
   signOut,
   updateProfile,
 } from "firebase/auth";

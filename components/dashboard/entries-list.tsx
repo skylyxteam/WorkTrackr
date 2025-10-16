@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Pencil, Trash2 } from "lucide-react";
 import type { TimeEntry } from "@/types";
 import { Badge } from "@/components/ui/badge";
