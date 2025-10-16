@@ -30,18 +30,6 @@ export function SignInForm() {
     resolver: zodResolver(schema),
   });
 
-  useEffect(() => {
-    finalizeRedirectSignIn()
-      .then((user) => {
-        if (user) {
-          window.location.href = "/dashboard";
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  }, []);
-
   const onSubmit = handleSubmit(async (values) => {
     setMessage(null);
     try {

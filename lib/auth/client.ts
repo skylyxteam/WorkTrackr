@@ -57,26 +57,9 @@ export async function signUpWithEmail(email: string, password: string, displayNa
 
 export async function signInWithGoogle() {
   const auth = getFirebaseAuth();
-  await setPersistence(auth, browserLocalPersistence);
   const provider = new GoogleAuthProvider();
-
-  if (typeof window !== "undefined" && window.innerWidth < 640) {
-    await signInWithRedirect(auth, provider);
-    return null;
-  }
-
   const credential = await signInWithPopup(auth, provider);
   const idToken = await credential.user.getIdToken();
-  return exchangeSession(idToken);
-}
-
-export async function finalizeRedirectSignIn() {
-  const auth = getFirebaseAuth();
-  const result = await getRedirectResult(auth);
-  if (!result || !result.user) {
-    return null;
-  }
-  const idToken = await result.user.getIdToken();
   return exchangeSession(idToken);
 }
 
