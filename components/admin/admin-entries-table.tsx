@@ -2,7 +2,7 @@
 
 import type { TimeEntryWithUser } from "@/types";
 import { Badge } from "@/components/ui/badge";
-import { formatIsoToLocalDateTime, isoToLocalTimeInput } from "@/utils/date";
+import { formatIsoToLocalDateTime, isoToLocalTimeInput, formatMinutesToHoursAndMinutes } from "@/utils/date";
 import { Loader2 } from "lucide-react";
 
 const statusBadge: Record<TimeEntryWithUser["status"], "success" | "danger" | "warning"> = {
@@ -33,7 +33,7 @@ export function AdminEntriesTable({ entries, selectedIds, onToggle, loading }: A
               <th className="px-4 py-3 text-left whitespace-nowrap">Date</th>
               <th className="px-4 py-3 text-left whitespace-nowrap">Start</th>
               <th className="px-4 py-3 text-left whitespace-nowrap">End</th>
-              <th className="px-4 py-3 text-left whitespace-nowrap">Minutes</th>
+              <th className="px-4 py-3 text-left whitespace-nowrap">Hours</th>
               <th className="px-4 py-3 text-left whitespace-nowrap">Status</th>
               <th className="px-4 py-3 text-left whitespace-nowrap">Note</th>
               <th className="px-4 py-3 text-left whitespace-nowrap">Review</th>
@@ -42,7 +42,7 @@ export function AdminEntriesTable({ entries, selectedIds, onToggle, loading }: A
           <tbody className="divide-y divide-[rgb(var(--color-border))] text-sm">
             {entries.map((entry) => {
               const endTimeLabel = entry.endUtc ? isoToLocalTimeInput(entry.endUtc) : "--";
-              const minutesLabel = entry.totalMinutes ?? "--";
+              const durationLabel = formatMinutesToHoursAndMinutes(entry.totalMinutes);
               return (
                 <tr
                   key={entry.id}
@@ -68,7 +68,7 @@ export function AdminEntriesTable({ entries, selectedIds, onToggle, loading }: A
                   <td className="px-4 py-4 whitespace-nowrap">{entry.date}</td>
                   <td className="px-4 py-4 whitespace-nowrap">{isoToLocalTimeInput(entry.startUtc)}</td>
                   <td className="px-4 py-4 whitespace-nowrap">{endTimeLabel}</td>
-                  <td className="px-4 py-4 whitespace-nowrap">{minutesLabel}</td>
+                  <td className="px-4 py-4 whitespace-nowrap">{durationLabel}</td>
                   <td className="px-4 py-4 whitespace-nowrap">
                     <Badge variant={statusBadge[entry.status]}>{entry.status}</Badge>
                   </td>

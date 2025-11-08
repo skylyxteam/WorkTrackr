@@ -1,6 +1,6 @@
-# WorkTrackr
+# ClockUp
 
-WorkTrackr is a modern time-tracking app for distributed teams built with Next.js 15, TypeScript, Tailwind CSS, and Firebase. Employees log their hours with rich context, while administrators review, approve, or reject submissions in bulk and export CSVs for payroll or auditing.
+ClockUp is a modern time-tracking app for distributed teams built with Next.js 15, TypeScript, Tailwind CSS, and Firebase. Employees log their hours with rich context, while administrators review, approve, or reject submissions in bulk and export CSVs for payroll or auditing.
 
 ## Features
 

@@ -6,7 +6,7 @@ export default function SignUpPage() {
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-3 text-center">
         <h1 className="text-2xl font-semibold">Create an account</h1>
-        <p className="text-sm text-[rgb(var(--color-subtle))]">Join WorkTrackr to start logging time for your team.</p>
+        <p className="text-sm text-[rgb(var(--color-subtle))]">Join ClockUp to start logging time for your team.</p>
       </header>
 
       <SignUpForm />

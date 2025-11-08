@@ -4,7 +4,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import type { TimeEntry } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatIsoToLocalDateTime, isoToLocalTimeInput } from "@/utils/date";
+import { formatIsoToLocalDateTime, isoToLocalTimeInput, formatMinutesToHoursAndMinutes } from "@/utils/date";
 
 const statusVariant: Record<TimeEntry["status"], "success" | "danger" | "warning"> = {
   approved: "success",
@@ -41,7 +41,7 @@ export function EntriesList({ entries, onEdit, onDelete }: EntriesListProps) {
               <th className="px-4 py-3 text-left dark:bg-slate-900/40 whitespace-nowrap">Date</th>
               <th className="px-4 py-3 text-left whitespace-nowrap">Start</th>
               <th className="px-4 py-3 text-left whitespace-nowrap">End</th>
-              <th className="px-4 py-3 text-left whitespace-nowrap">Minutes</th>
+              <th className="px-4 py-3 text-left whitespace-nowrap">Hours</th>
               <th className="px-4 py-3 text-left whitespace-nowrap">Status</th>
               <th className="px-4 py-3 text-left whitespace-nowrap">Notes</th>
               <th className="px-4 py-3 text-left whitespace-nowrap">Reviewed</th>
@@ -51,7 +51,7 @@ export function EntriesList({ entries, onEdit, onDelete }: EntriesListProps) {
           <tbody className="divide-y divide-[rgb(var(--color-border))] text-sm">
             {entries.map((entry) => {
               const endTimeLabel = entry.endUtc ? isoToLocalTimeInput(entry.endUtc) : "--";
-              const minutesLabel = entry.totalMinutes ?? "--";
+              const durationLabel = formatMinutesToHoursAndMinutes(entry.totalMinutes);
               return (
                 <tr
                   key={entry.id}
@@ -62,7 +62,7 @@ export function EntriesList({ entries, onEdit, onDelete }: EntriesListProps) {
                   <td className="bg-white px-4 py-4 font-medium dark:bg-[rgb(var(--color-surface))] whitespace-nowrap">{entry.date}</td>
                   <td className="px-4 py-4 whitespace-nowrap">{isoToLocalTimeInput(entry.startUtc)}</td>
                   <td className="px-4 py-4 whitespace-nowrap">{endTimeLabel}</td>
-                  <td className="px-4 py-4 whitespace-nowrap">{minutesLabel}</td>
+                  <td className="px-4 py-4 whitespace-nowrap">{durationLabel}</td>
                   <td className="px-4 py-4 whitespace-nowrap">
                     <Badge variant={statusVariant[entry.status]}>{entry.status}</Badge>
                   </td>

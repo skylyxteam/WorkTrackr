@@ -58,7 +58,7 @@ export function TopNav({ user }: { user: UserProfile }) {
         {/* Logo */}
         <div className="flex items-center gap-3">
           <span className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-700 dark:bg-blue-900/40 dark:text-blue-200">
-            <Clock className="h-3.5 w-3.5" /> WorkTrackr
+            <Clock className="h-3.5 w-3.5" /> ClockUp
           </span>
           
           {/* Desktop Navigation */}

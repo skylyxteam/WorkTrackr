@@ -18,7 +18,7 @@ beforeAll(async () => {
 
   const [host, port = "8080"] = emulatorHost.split(":");
   testEnv = await initializeTestEnvironment({
-    projectId: "demo-worktrackr",
+    projectId: "demo-clockup",
     firestore: {
       host,
       port: Number(port),

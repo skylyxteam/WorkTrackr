@@ -1,5 +1,5 @@
 {
-  "name": "worktrackr",
+  "name": "clockup",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,7 +10,7 @@
     "test": "jest",
     "test:unit": "jest --runInBand --testPathPattern=__tests__/components",
     "test:integration": "jest --runInBand --testPathPattern=__tests__/api",
-    "test:rules": "firebase emulators:exec --project demo-worktrackr --only firestore \"npm run test:rules:run\"",
+    "test:rules": "firebase emulators:exec --project demo-clockup --only firestore \"npm run test:rules:run\"",
     "test:rules:run": "jest --runInBand tests/security/firestore.rules.test.ts",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",

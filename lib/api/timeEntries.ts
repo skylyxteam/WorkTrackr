@@ -7,6 +7,7 @@ import type {
   ExportQueryInput,
   ClockOutPayloadInput,
 } from "@/lib/validation";
+import { combineDateAndTimeToUtc } from "@/utils/date";
 
 async function handleJson<T>(response: Response): Promise<T> {
   if (!response.ok) {
@@ -37,10 +38,18 @@ export async function clockOut(payload: ClockOutPayloadInput = { note: undefined
 }
 
 export async function createTimeEntry(payload: TimeEntryPayloadInput): Promise<TimeEntry> {
+  // Convert to UTC on the client side to avoid server timezone issues
+  const startUtc = combineDateAndTimeToUtc(payload.date, payload.startTime);
+  const endUtc = combineDateAndTimeToUtc(payload.date, payload.endTime);
+
   const response = await fetch("/api/timeEntries", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      ...payload,
+      startUtc,
+      endUtc,
+    }),
   });
 
   const data = await handleJson<{ entry: TimeEntry }>(response);
@@ -48,10 +57,18 @@ export async function createTimeEntry(payload: TimeEntryPayloadInput): Promise<T
 }
 
 export async function updateTimeEntry(id: string, payload: TimeEntryPayloadInput): Promise<TimeEntry> {
+  // Convert to UTC on the client side to avoid server timezone issues
+  const startUtc = combineDateAndTimeToUtc(payload.date, payload.startTime);
+  const endUtc = combineDateAndTimeToUtc(payload.date, payload.endTime);
+
   const response = await fetch(`/api/timeEntries/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      ...payload,
+      startUtc,
+      endUtc,
+    }),
   });
 
   const data = await handleJson<{ entry: TimeEntry }>(response);
@@ -108,6 +125,6 @@ export async function downloadCsv(params: Partial<ExportQueryInput> = {}): Promi
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = `worktrackr-export-${new Date().toISOString().slice(0, 10)}.csv`;  anchor.click();
+  anchor.download = `clockup-export-${new Date().toISOString().slice(0, 10)}.csv`;  anchor.click();
   URL.revokeObjectURL(url);
 }

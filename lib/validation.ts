@@ -15,6 +15,9 @@ export const timeEntryPayloadSchema = z.object({
   startTime: timeString,
   endTime: timeString,
   note: noteField,
+  // Optional: pre-converted UTC strings from client
+  startUtc: z.string().optional(),
+  endUtc: z.string().optional(),
 });
 
 export const timeEntryUpdateSchema = timeEntryPayloadSchema.partial().refine(

@@ -279,6 +279,26 @@ export async function listEntriesForUser(userId: string, filter: TimeEntryFilter
   return entries;
 }
 
+export async function getTotalMinutesForUser(userId: string): Promise<number> {
+  const snapshot = await entriesCollection
+    .where("userId", "==", userId)
+    .where("status", "in", ["approved", "pending"])
+    .select("totalMinutes")
+    .get();
+
+  let totalMinutes = 0;
+
+  for (const doc of snapshot.docs) {
+    const data = doc.data();
+    const value = data?.totalMinutes;
+    if (typeof value === "number") {
+      totalMinutes += value;
+    }
+  }
+
+  return totalMinutes;
+}
+
 export async function listEntriesForAdmin(filter: TimeEntryFilter = {}): Promise<TimeEntryWithUser[]> {
   let query: Query<DocumentData> = entriesCollection.orderBy("date", "desc").limit(DEFAULT_LIMIT);
 

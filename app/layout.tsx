@@ -15,19 +15,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://worktrackr.app"),
+  metadataBase: new URL("https://clockup.app"),
   title: {
-    default: "WorkTrackr",
-    template: "%s | WorkTrackr",
+    default: "ClockUp",
+    template: "%s | ClockUp",
   },
   description:
     "Modern time-tracking for distributed teams. Employees log hours, admins approve with ease.",
   openGraph: {
-    title: "WorkTrackr",
+    title: "ClockUp",
     description:
       "Modern time-tracking for distributed teams. Employees log hours, admins approve with ease.",
     type: "website",
-    url: "https://worktrackr.app",
+    url: "https://clockup.app",
   },
   icons: {
     icon: "/favicon.ico",

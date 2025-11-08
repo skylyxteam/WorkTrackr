@@ -26,8 +26,10 @@ export async function PATCH(
   }
 
   try {
-    const startUtc = combineDateAndTimeToUtc(parsed.data.date, parsed.data.startTime);
-    const endUtc = combineDateAndTimeToUtc(parsed.data.date, parsed.data.endTime);
+    // Prefer pre-converted UTC from client (to avoid server timezone issues)
+    // Fall back to server-side conversion for backward compatibility
+    const startUtc = parsed.data.startUtc ?? combineDateAndTimeToUtc(parsed.data.date, parsed.data.startTime);
+    const endUtc = parsed.data.endUtc ?? combineDateAndTimeToUtc(parsed.data.date, parsed.data.endTime);
 
     const entry = await updateTimeEntryRecord({
       entryId,

@@ -27,6 +27,9 @@ function getDateFormatter(timeZone: string) {
 }
 
 export function combineDateAndTimeToUtc(date: string, time: string): string {
+  // IMPORTANT: This function should only be called on the CLIENT side
+  // where the user's local timezone is available. The browser will
+  // correctly interpret the datetime in the user's local timezone.
   const isoInput = `${date}T${time}:00`;
   const asDate = new Date(isoInput);
   if (Number.isNaN(asDate.getTime())) {
@@ -87,6 +90,23 @@ export function isoToLocalTimeInput(iso: string): string {
   const hours = String(date.getHours()).padStart(2, "0");
   const minutes = String(date.getMinutes()).padStart(2, "0");
   return `${hours}:${minutes}`;
+}
+
+export function formatMinutesToHoursAndMinutes(totalMinutes: number | null | undefined): string {
+  if (totalMinutes == null) return "--";
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours === 0) {
+    return `${minutes}m`;
+  }
+
+  if (minutes === 0) {
+    return `${hours}h`;
+  }
+
+  return `${hours}h ${minutes}m`;
 }
 
 

@@ -6,7 +6,7 @@ export default function SignInPage() {
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-3 text-center">
         <span className="mx-auto inline-flex items-center gap-2 rounded-full bg-blue-100 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-blue-700 dark:bg-blue-900/40 dark:text-blue-200">
-          <Clock className="h-3.5 w-3.5" /> WorkTrackr
+          <Clock className="h-3.5 w-3.5" /> ClockUp
         </span>
         <h1 className="text-2xl font-semibold">Sign in to track your time</h1>
         <p className="text-sm text-[rgb(var(--color-subtle))]">
